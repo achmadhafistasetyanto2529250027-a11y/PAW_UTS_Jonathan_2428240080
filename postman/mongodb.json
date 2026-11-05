@@ -1,0 +1,799 @@
+{
+  "info": {
+    "_postman_id": "7a8b9c0d-1e2f-4a5b-8c9d-0e1f2a3b4c5d",
+    "name": "PAW2_Tugas3_MongoDB_Koperasi",
+    "description": "Pengujian Otomatis RESTful API Koperasi Terhubung MongoDB dengan Referencing, Embedding, Filtering, Pagination, Sorting, dan Projection (Tugas 3 / Kuis 1 PAW II - Jonathan Immanuel A. - 2428240080)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. MongoDB Schema & Relations (Referencing & Embedding)",
+      "item": [
+        {
+          "name": "1.1 Get All Members (Referenced Collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons memuat data master anggota\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"status\", \"success\");",
+                  "    pm.expect(json.data).to.be.an(\"array\");",
+                  "    pm.expect(json.data.length).to.be.at.least(1);",
+                  "    pm.environment.set(\"memberId\", json.data[0]._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["members"]
+            }
+          }
+        },
+        {
+          "name": "1.2 Create Member (Master Anggota)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Data anggota baru berhasil disimpan di MongoDB\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.data).to.have.property(\"_id\");",
+                  "    pm.expect(json.data.nama).to.eql(\"Hendra Wijaya\");",
+                  "    pm.environment.set(\"memberId\", json.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama\": \"Hendra Wijaya\",\n  \"nik\": \"3205566778890001\",\n  \"noTelepon\": \"081299881122\",\n  \"email\": \"hendra@koperasi.id\",\n  \"alamat\": \"Jl. Pahlawan No. 7, Semarang\",\n  \"statusKeanggotaan\": \"aktif\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/members",
+              "host": ["{{base_url}}"],
+              "path": ["members"]
+            }
+          }
+        },
+        {
+          "name": "1.3 Create Loan with Referencing & Embedding",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Terbukti mengimplementasikan REFERENCING ke Anggota\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property(\"anggota\");",
+                  "    pm.expect(json.data.anggota).to.be.an(\"object\");",
+                  "    pm.expect(json.data.anggota.nama).to.eql(\"Hendra Wijaya\");",
+                  "});",
+                  "",
+                  "pm.test(\"Terbukti mengimplementasikan EMBEDDING Jaminan & Riwayat Pembayaran\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data).to.have.property(\"jaminan\");",
+                  "    pm.expect(json.data.jaminan.jenis).to.eql(\"BPKB Honda Beat 2022\");",
+                  "    pm.expect(json.data).to.have.property(\"riwayatPembayaran\");",
+                  "    pm.expect(json.data.riwayatPembayaran).to.be.an(\"array\");",
+                  "    pm.expect(json.data.riwayatPembayaran.length).to.eql(1);",
+                  "    pm.environment.set(\"loanId\", json.data._id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anggota\": \"{{memberId}}\",\n  \"jumlahPinjaman\": 6000000,\n  \"tenorBulan\": 12,\n  \"bungaPersen\": 1.5,\n  \"status\": \"aktif\",\n  \"keterangan\": \"Pinjaman pengadaan alat kerja\",\n  \"jaminan\": {\n    \"jenis\": \"BPKB Honda Beat 2022\",\n    \"nomorDokumen\": \"BPKB-H-9921-SMG\",\n    \"nilaiTaksiran\": 14000000\n  },\n  \"riwayatPembayaran\": [\n    {\n      \"cicilanKe\": 1,\n      \"jumlahBayar\": 550000,\n      \"metodePembayaran\": \"transfer\",\n      \"status\": \"lunas\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": ["{{base_url}}"],
+              "path": ["loans"]
+            }
+          }
+        },
+        {
+          "name": "1.4 Get Loan by ID (Populated Referencing & Embedding)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Data pinjaman memuat detail anggota ter-populate dan embedded dokumen\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"_id\");",
+                  "    pm.expect(json.anggota).to.have.property(\"nama\");",
+                  "    pm.expect(json.jaminan).to.have.property(\"nomorDokumen\");",
+                  "    pm.expect(json.riwayatPembayaran).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loanId}}"]
+            }
+          }
+        },
+        {
+          "name": "1.5 Add Payment to Embedded Array",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Array riwayatPembayaran bertambah dalam embedded subdocument\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.riwayatPembayaran.length).to.be.at.least(2);",
+                  "    pm.expect(json.data.riwayatPembayaran[1].cicilanKe).to.eql(2);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cicilanKe\": 2,\n  \"jumlahBayar\": 550000,\n  \"metodePembayaran\": \"transfer\",\n  \"status\": \"lunas\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}/pembayaran",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loanId}}", "pembayaran"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Endpoint Utama - Filtering, Pagination, Sorting, Projection",
+      "item": [
+        {
+          "name": "2.1 Main Endpoint - Get Loans with Default Pagination",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons memuat objek pagination dan data array\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"pagination\");",
+                  "    pm.expect(json.pagination).to.have.property(\"total\");",
+                  "    pm.expect(json.pagination).to.have.property(\"page\", 1);",
+                  "    pm.expect(json.pagination).to.have.property(\"limit\");",
+                  "    pm.expect(json.data).to.be.an(\"array\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": ["{{base_url}}"],
+              "path": ["loans"]
+            }
+          }
+        },
+        {
+          "name": "2.2 Filtering - Filter by Status (aktif)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Semua data pinjaman berstatus aktif\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.data.length).to.be.at.least(1);",
+                  "    json.data.forEach(function (loan) {",
+                  "        pm.expect(loan.status).to.eql(\"aktif\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?status=aktif",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "aktif"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.3 Filtering - Filter by Amount Range (5M - 10M)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Semua pinjaman berada pada rentang 5jt s.d 10jt\", function () {",
+                  "    var json = pm.response.json();",
+                  "    json.data.forEach(function (loan) {",
+                  "        pm.expect(loan.jumlahPinjaman).to.be.at.least(5000000);",
+                  "        pm.expect(loan.jumlahPinjaman).to.be.at.most(10000000);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?minPinjaman=5000000&maxPinjaman=10000000",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "minPinjaman",
+                  "value": "5000000"
+                },
+                {
+                  "key": "maxPinjaman",
+                  "value": "10000000"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.4 Pagination - Page 1 with Limit 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Metadata pagination halaman 1 sesuai limit 2\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.pagination.page).to.eql(1);",
+                  "    pm.expect(json.pagination.limit).to.eql(2);",
+                  "    pm.expect(json.data.length).to.eql(2);",
+                  "    pm.expect(json.pagination.hasNextPage).to.be.true;",
+                  "    pm.expect(json.pagination.hasPrevPage).to.be.false;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?page=1&limit=2",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.5 Pagination - Page 2 with Limit 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Metadata pagination halaman 2 terverifikasi\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.pagination.page).to.eql(2);",
+                  "    pm.expect(json.pagination.limit).to.eql(2);",
+                  "    pm.expect(json.data.length).to.eql(2);",
+                  "    pm.expect(json.pagination.hasPrevPage).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?page=2&limit=2",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "2"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.6 Sorting - Sort by Amount Descending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Pinjaman terurut dari jumlah terbesar ke terkecil\", function () {",
+                  "    var json = pm.response.json();",
+                  "    for (var i = 0; i < json.data.length - 1; i++) {",
+                  "        pm.expect(json.data[i].jumlahPinjaman).to.be.at.least(json.data[i + 1].jumlahPinjaman);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?sortBy=jumlahPinjaman&order=desc",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "jumlahPinjaman"
+                },
+                {
+                  "key": "order",
+                  "value": "desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.7 Sorting - Sort by Amount Ascending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Pinjaman terurut dari jumlah terkecil ke terbesar\", function () {",
+                  "    var json = pm.response.json();",
+                  "    for (var i = 0; i < json.data.length - 1; i++) {",
+                  "        pm.expect(json.data[i].jumlahPinjaman).to.be.at.most(json.data[i + 1].jumlahPinjaman);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?sortBy=jumlahPinjaman&order=asc",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "sortBy",
+                  "value": "jumlahPinjaman"
+                },
+                {
+                  "key": "order",
+                  "value": "asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.8 Projection - Specific Fields Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Hanya field yang diminta pada projection yang dikembalikan\", function () {",
+                  "    var json = pm.response.json();",
+                  "    var first = json.data[0];",
+                  "    pm.expect(first).to.have.property(\"jumlahPinjaman\");",
+                  "    pm.expect(first).to.have.property(\"status\");",
+                  "    pm.expect(first).to.have.property(\"tenorBulan\");",
+                  "    pm.expect(first.bungaPersen).to.be.undefined;",
+                  "    pm.expect(first.keterangan).to.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?fields=jumlahPinjaman,status,tenorBulan",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "fields",
+                  "value": "jumlahPinjaman,status,tenorBulan"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.9 Projection with Referencing - Select Fields and Anggota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Projection memuat field terpilih dan relasi anggota\", function () {",
+                  "    var json = pm.response.json();",
+                  "    var first = json.data[0];",
+                  "    pm.expect(first).to.have.property(\"jumlahPinjaman\");",
+                  "    pm.expect(first).to.have.property(\"anggota\");",
+                  "    pm.expect(first.anggota).to.have.property(\"nama\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?fields=jumlahPinjaman,status,anggota",
+              "host": ["{{base_url}}"],
+              "path": ["loans"],
+              "query": [
+                {
+                  "key": "fields",
+                  "value": "jumlahPinjaman,status,anggota"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. CRUD Operations & Negative Scenarios",
+      "item": [
+        {
+          "name": "3.1 Update Loan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Data pinjaman berhasil diperbarui\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.data.status).to.eql(\"lunas\");",
+                  "    pm.expect(json.data.jumlahPinjaman).to.eql(6500000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anggota\": \"{{memberId}}\",\n  \"jumlahPinjaman\": 6500000,\n  \"tenorBulan\": 12,\n  \"bungaPersen\": 1.5,\n  \"status\": \"lunas\",\n  \"keterangan\": \"Pinjaman diperbarui dan dilunasi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loanId}}"]
+            }
+          }
+        },
+        {
+          "name": "3.2 Negative - Unauthorized Create Loan (No API Key)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Pesan error unauthorized sesuai standar middleware\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.include(\"Unauthorized\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jumlahPinjaman\": 5000000,\n  \"tenorBulan\": 12,\n  \"status\": \"aktif\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": ["{{base_url}}"],
+              "path": ["loans"]
+            }
+          }
+        },
+        {
+          "name": "3.3 Negative - Validation Error (Missing Required Fields)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Pesan error data tidak lengkap muncul\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.include(\"Data tidak lengkap\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jumlahPinjaman\": 5000000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": ["{{base_url}}"],
+              "path": ["loans"]
+            }
+          }
+        },
+        {
+          "name": "3.4 Negative - Get Loan Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Pesan error data tidak ditemukan\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"error\");",
+                  "    pm.expect(json.message).to.eql(\"Data tidak ditemukan\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/000000000000000000000000",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "000000000000000000000000"]
+            }
+          }
+        },
+        {
+          "name": "3.5 Delete Loan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Data pinjaman berhasil dihapus dari MongoDB\", function () {",
+                  "    var json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql(\"success\");",
+                  "    pm.expect(json.message).to.include(\"berhasil dihapus\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loanId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

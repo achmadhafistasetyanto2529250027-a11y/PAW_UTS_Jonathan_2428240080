@@ -1,0 +1,458 @@
+{
+  "info": {
+    "_postman_id": "4c36ef1d-a8bd-43a1-b44f-2421f1cfbd45",
+    "name": "PAW2_Tugas2_Koperasi_Pinjaman",
+    "description": "Collection Pengujian Otomatis RESTful API Koperasi - Pinjaman Anggota (Tugas 2 PAW II - Jonathan Immanuel A. - 2428240080)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Skenario Berhasil (Positive Tests)",
+      "item": [
+        {
+          "name": "1.1 Get All Loans",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons harus berupa array data pinjaman\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test(\"Setiap objek pinjaman memiliki properti skema wajib\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.forEach(function (loan) {",
+                  "        pm.expect(loan).to.have.property(\"id\").that.is.a(\"number\");",
+                  "        pm.expect(loan).to.have.property(\"namaAnggota\").that.is.a(\"string\");",
+                  "        pm.expect(loan).to.have.property(\"jumlahPinjaman\").that.is.a(\"number\");",
+                  "        pm.expect(loan).to.have.property(\"tenorBulan\").that.is.a(\"number\");",
+                  "        pm.expect(loan).to.have.property(\"status\").that.is.oneOf([\"aktif\", \"lunas\"]);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.2 Filter Loans by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Semua pinjaman yang dikembalikan berstatus aktif\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    jsonData.forEach(function (loan) {",
+                  "        pm.expect(loan.status).to.eql(\"aktif\");",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans?status=aktif",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "aktif"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.3 Create New Loan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons berstatus success dan memuat data pinjaman baru\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"success\");",
+                  "    pm.expect(jsonData).to.have.property(\"message\", \"Data berhasil ditambahkan\");",
+                  "    pm.expect(jsonData.data).to.have.property(\"id\").that.is.a(\"number\");",
+                  "    pm.expect(jsonData.data.namaAnggota).to.eql(\"Jonathan Immanuel A.\");",
+                  "    pm.expect(jsonData.data.jumlahPinjaman).to.eql(7500000);",
+                  "    pm.expect(jsonData.data.status).to.eql(\"aktif\");",
+                  "",
+                  "    // Simpan ID pinjaman ke environment untuk request selanjutnya",
+                  "    pm.environment.set(\"loanId\", jsonData.data.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaAnggota\": \"Jonathan Immanuel A.\",\n  \"jumlahPinjaman\": 7500000,\n  \"tenorBulan\": 12,\n  \"bungaPersen\": 1.5,\n  \"status\": \"aktif\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.4 Get Loan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons memuat data objek pinjaman dengan ID yang sesuai\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedId = pm.environment.get(\"loanId\");",
+                  "    pm.expect(jsonData.id).to.eql(expectedId);",
+                  "    pm.expect(jsonData.namaAnggota).to.eql(\"Jonathan Immanuel A.\");",
+                  "    pm.expect(jsonData.status).to.eql(\"aktif\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans",
+                "{{loanId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.5 Update Loan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons konfirmasi pembaruan dan data ter-update dengan benar\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedId = pm.environment.get(\"loanId\");",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"success\");",
+                  "    pm.expect(jsonData).to.have.property(\"message\", \"Data berhasil diperbarui\");",
+                  "    pm.expect(jsonData.data.id).to.eql(expectedId);",
+                  "    pm.expect(jsonData.data.namaAnggota).to.eql(\"Jonathan Immanuel A. (Updated)\");",
+                  "    pm.expect(jsonData.data.tenorBulan).to.eql(18);",
+                  "    pm.expect(jsonData.data.status).to.eql(\"lunas\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaAnggota\": \"Jonathan Immanuel A. (Updated)\",\n  \"jumlahPinjaman\": 7500000,\n  \"tenorBulan\": 18,\n  \"bungaPersen\": 1.2,\n  \"status\": \"lunas\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans",
+                "{{loanId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "1.6 Delete Loan by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test(\"Isi respons DELETE harus kosong (No Content)\", function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loanId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans",
+                "{{loanId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Skenario Gagal (Negative Tests)",
+      "item": [
+        {
+          "name": "2.1 Create Loan - Missing API Key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons error memuat pesan Unauthorized\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"error\");",
+                  "    pm.expect(jsonData.message).to.include(\"Unauthorized\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaAnggota\": \"Penyusup Tanpa Izin\",\n  \"jumlahPinjaman\": 1000000,\n  \"tenorBulan\": 6,\n  \"status\": \"aktif\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.2 Create Loan - Incomplete Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 400 Bad Request\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons error memuat pesan validasi kelengkapan data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"error\");",
+                  "    pm.expect(jsonData.message).to.include(\"Data tidak lengkap\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"namaAnggota\": \"Data Tidak Lengkap\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.3 Get Loan - ID Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons error memuat pesan Data tidak ditemukan\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"error\");",
+                  "    pm.expect(jsonData.message).to.eql(\"Data tidak ditemukan\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/{{invalidId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "loans",
+                "{{invalidId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2.4 Route Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code adalah 404 Not Found\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Respons error memuat pesan Endpoint tidak ditemukan\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"status\", \"error\");",
+                  "    pm.expect(jsonData.message).to.eql(\"Endpoint tidak ditemukan\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/endpoint-tidak-ada",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "endpoint-tidak-ada"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
