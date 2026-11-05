@@ -1,17 +1,17 @@
-# Tugas 3 / Kuis 1: RESTful API Express.js Terhubung MongoDB
+# TUTS_jJonathan : RESTful API Express.js Terhubung MongoDB
 
 > **Mata Kuliah:** Pemrograman Aplikasi Web II  
 > **Nama:** Jonathan Immanuel A.  
 > **NIM:** 2428240080  
 > **Kelas:** SI5B  
 > **Topik Proyek:** Koperasi - Pinjaman Anggota (MongoDB Integration)  
-> **Repository GitHub:** [https://github.com/Jonathan081105/tugas1-restfull-24282400080.git](https://github.com/Jonathan081105/tugas1-restfull-24282400080.git)
+> **Repository GitHub:** [https://github.com/Jonathan081105/PAW_UTS_Jonathan_2428240080.git]
 
 ---
 
 ## 📌 Deskripsi Proyek
 
-Proyek ini merupakan pembaruan dari RESTful API Koperasi (Tugas 1 & 2) yang sebelumnya menggunakan penyimpanan *in-memory* (Array), kini dihubungkan secara penuh ke **MongoDB** menggunakan **Mongoose ODM**.
+Proyek ini merupakan pembaruan dari RESTful API agent tiket bus (Tugas 1 & 2) yang sebelumnya menggunakan penyimpanan *in-memory* (Array), kini dihubungkan secara penuh ke **MongoDB** menggunakan **Mongoose ODM**.
 
 Sesuai instruksi penugasan, proyek ini telah mengimplementasikan:
 1. **Koneksi Basis Data MongoDB**: Menggunakan Mongoose ODM dengan arsitektur terstruktur (`config/db.js`).
@@ -75,22 +75,22 @@ Endpoint `GET /loans` mendukung parameter query string yang kaya:
 
 | Fitur | Parameter Query | Contoh Penggunaan | Deskripsi |
 | :--- | :--- | :--- | :--- |
-| **Filtering (Status)** | `status` | `/loans?status=aktif` | Mengambil hanya pinjaman dengan status tertentu (`aktif` / `lunas`). |
-| **Filtering (Rentang)** | `minPinjaman`, `maxPinjaman` | `/loans?minPinjaman=5000000&maxPinjaman=10000000` | Memfilter pinjaman dengan nominal $\ge$ 5jt dan $\le$ 10jt. |
-| **Filtering (Tenor)** | `tenor` | `/loans?tenor=12` | Memfilter pinjaman dengan tenor tertentu (bulan). |
-| **Filtering (Jaminan)** | `jenisJaminan` | `/loans?jenisJaminan=BPKB` | Memfilter pinjaman berdasarkan jenis subdocument jaminan. |
-| **Filtering (Pencarian)** | `search` | `/loans?search=Sari` | Mencari data pinjaman berdasarkan nama anggota peminjam. |
+| **Filtering (Status)** | `status` | `/loans?status=aktif` |Mengambil data Pemesanan tiket (`aktif` / `lunas`). |
+| **Filtering (Rentang)** | `minPinjaman`, `maxPinjaman` | `/loans?minpemesanan=5000000&maxPemesanan=10000000` | Memfilter Pemesanan tiket $\ge$ 5jt dan $\le$ 10jt. |
+| **Filtering (Tenor)** | `tenor` | `/loans?tenor=12` | Memfilter pemesanan tiket. |
+| **Filtering (Jaminan)** | `jenispemesanan` | `/loans?jenisJaminan=BPKB` |memfilter kapan pemesanan tiket berlanjut. |
+| **Filtering (Pencarian)** | `search` | `/loans?search=Sari` | mencari data lengkap anggota. |
 | **Pagination** | `page`, `limit` | `/loans?page=1&limit=2` | Menampilkan data halaman 1 dengan kapasitas 2 data per halaman. |
 | **Sorting** | `sortBy`, `order` | `/loans?sortBy=jumlahPinjaman&order=desc` | Mengurutkan pinjaman dari nominal terbesar ke terkecil. |
-| **Sorting (Ascending)** | `sortBy`, `order` | `/loans?sortBy=jumlahPinjaman&order=asc` | Mengurutkan pinjaman dari nominal terkecil ke terbesar. |
+| **Sorting (Ascending)** | `sortBy`, `order` | `/loans?sortBy=jumlahPemesanan&order=asc` | Mengurutkan pinjaman dari nominal terkecil ke terbesar. |
 | **Projection** | `fields` | `/loans?fields=jumlahPinjaman,status,tenorBulan` | Hanya mengembalikan field tertentu pada respons JSON. |
-| **Projection + Relasi** | `fields` | `/loans?fields=jumlahPinjaman,status,anggota` | Mengembalikan field tertentu beserta dokumen anggota yang di-populate. |
+| **Projection + Relasi** | `fields` | `/loans?fields=jumlahPemesanan,status,anggota` | Mengembalikan field tertentu beserta dokumen anggota yang di-populate. |
 
 ### Contoh Format Respons Endpoint Utama:
 ```json
 {
   "status": "success",
-  "message": "Data pinjaman berhasil diambil",
+  "message": "Data Tiket berhasil di cetak",
   "pagination": {
     "total": 5,
     "page": 1,
@@ -106,7 +106,7 @@ Endpoint `GET /loans` mendukung parameter query string yang kaya:
       "tenorBulan": 24,
       "bungaPersen": 2,
       "status": "aktif",
-      "keterangan": "Pinjaman biaya pendidikan magister",
+      "keterangan": "tiket mengeluarkan struk",
       "anggota": {
         "_id": "6ae360b04a155a0c9e6df8fe",
         "nama": "Kak Andi",
@@ -138,12 +138,12 @@ Endpoint `GET /loans` mendukung parameter query string yang kaya:
 
 ## 📋 Daftar Seluruh Endpoint API
 
-### 1. Pinjaman (`/loans`)
-- `GET /loans` - Menampilkan daftar pinjaman (Filtering, Pagination, Sorting, Projection, Referencing).
-- `GET /loans/:id` - Menampilkan detail pinjaman tunggal beserta relasi anggota dan embedded subdokumen.
-- `POST /loans` - Menambahkan pinjaman baru (Membutuhkan header `x-api-key`).
-- `PUT /loans/:id` - Memperbarui pinjaman (Membutuhkan header `x-api-key`).
-- `DELETE /loans/:id` - Menghapus pinjaman (Membutuhkan header `x-api-key`).
+### 1. Pemesanan(`/loans`)
+- `GET /loans` - Menampilkan daftar pemesanan (Filtering, Pagination, Sorting, Projection, Referencing).
+- `GET /loans/:id` - Menampilkan detail pemesanan tunggal beserta relasi anggota dan embedded subdokumen.
+- `POST /loans` - Menambahkan pemesanan tiket baru  (Membutuhkan header `x-api-key`).
+- `PUT /loans/:id` - Memperbarui pemesanan (Membutuhkan header `x-api-key`).
+- `DELETE /loans/:id` - Menghapus pemesanan (Membutuhkan header `x-api-key`).
 - `POST /loans/:id/pembayaran` - Menambahkan rekaman cicilan ke dalam embedded subdocument array `riwayatPembayaran` (Membutuhkan header `x-api-key`).
 
 ### 2. Master Anggota (`/members`)
@@ -159,8 +159,8 @@ Endpoint `GET /loans` mendukung parameter query string yang kaya:
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/Jonathan081105/tugas1-restfull-24282400080.git
-cd tugas1-restful-2428240080
+git clone https://github.com/Jonathan081105/PAW_UTS_Jonathan_2428240080.git
+cd US_Jonathan_2428240080
 ```
 
 ### 2. Install Dependencies
@@ -191,75 +191,3 @@ npm run dev
 npm start
 ```
 Server akan aktif di: `http://localhost:4000`
-
----
-
-## 🧪 Pengujian Otomatis (Postman & Newman CLI)
-
-Telah disediakan collection dan environment pengujian otomatis khusus Tugas 3:
-- **Collection**: `postman/PAW2_Tugas3_MongoDB_Koperasi.postman_collection.json`
-- **Environment**: `postman/PAW2_Tugas3_Environment.postman_environment.json`
-
-### Menjalankan Uji Otomatis via Newman CLI:
-```bash
-npx newman run postman/PAW2_Tugas3_MongoDB_Koperasi.postman_collection.json -e postman/PAW2_Tugas3_Environment.postman_environment.json
-```
-**Hasil Eksekusi:**
-- **Total Permintaan (Requests):** 19 requests
-- **Total Asersi (Assertions):** 39 assertions
-- **Status:** **100% Passed (0 Failed)**
-
----
-
-## 📸 Bukti Pengujian (Screenshots)
-
-Berikut adalah dokumentasi visual hasil pengujian seluruh fitur yang diunggah ke repository:
-
-### 1. Bukti Desain Schema MongoDB (Referencing & Embedding)
-Memperlihatkan koleksi `members` yang dihubungkan dengan koleksi `loans` melalui Referencing ObjectId serta Embedding subdocument `jaminan` dan array `riwayatPembayaran`.
-![Bukti 1: MongoDB Schema Relations](screenshots/tugas3_1_mongodb_schema.png)
-
----
-
-### 2. Bukti Pengujian Filtering Endpoint Utama
-Memperlihatkan pengujian filter status aktif (`?status=aktif`) dan filter rentang nominal pinjaman (`?minPinjaman=5000000&maxPinjaman=10000000`).
-![Bukti 2: Filtering](screenshots/tugas3_2_filtering.png)
-
----
-
-### 3. Bukti Pengujian Pagination Endpoint Utama
-Memperlihatkan pengujian navigasi pagination halaman 1 dan halaman 2 dengan `limit=2` beserta verifikasi metadata `total`, `totalPages`, `hasNextPage`, dan `hasPrevPage`.
-![Bukti 3: Pagination](screenshots/tugas3_3_pagination.png)
-
----
-
-### 4. Bukti Pengujian Sorting Endpoint Utama
-Memperlihatkan pengujian pengurutan data pinjaman berdasarkan nominal secara descending (`order=desc`, tertinggi ke terendah) dan ascending (`order=asc`, terendah ke tertinggi).
-![Bukti 4: Sorting](screenshots/tugas3_4_sorting.png)
-
----
-
-### 5. Bukti Pengujian Projection Endpoint Utama
-Memperlihatkan pengujian pemilihan field spesifik (`fields=jumlahPinjaman,status,tenorBulan`) serta projection yang menyertakan data relasi anggota (`fields=jumlahPinjaman,status,anggota`).
-![Bukti 5: Projection](screenshots/tugas3_5_projection.png)
-
----
-
-### 6. Bukti Eksekusi Pengujian Otomatis Newman CLI
-Memperlihatkan ringkasan eksekusi Newman CLI dari Postman Collection dengan hasil 19 requests, 39 assertions, 100% Passed.
-![Bukti 6: Newman Runner](screenshots/tugas3_6_newman_runner.png)
-
----
-
-### 7. Bukti Inspeksi Fisik Dokumen Database MongoDB (Mongosh CLI)
-Memperlihatkan struktur fisik dokumen asli yang tersimpan di dalam basis data MongoDB `koperasi_db` pada koleksi `members` dan `loans`.
-![Bukti 7: Mongosh DB](screenshots/tugas3_7_mongosh_db.png)
-
----
-
-## 👤 Identitas Pengembang
-- **Nama:** Jonathan Immanuel A.
-- **NIM:** 2428240080
-- **Kelas:** SI5B
-- **Program Studi:** Sistem Informasi
-- **Mata Kuliah:** Pemrograman Aplikasi Web II

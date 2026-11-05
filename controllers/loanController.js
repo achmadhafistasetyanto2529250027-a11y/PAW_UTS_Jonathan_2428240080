@@ -35,8 +35,8 @@ const getLoans = async (req, res, next) => {
 
     if (minPinjaman || maxPinjaman) {
       filter.jumlahPinjaman = {};
-      if (minPinjaman) filter.jumlahPinjaman.$gte = Number(minPinjaman);
-      if (maxPinjaman) filter.jumlahPinjaman.$lte = Number(maxPinjaman);
+      if (minPinjaman) filter.jumlahPemesananTiket.$gte = Number(minPinjaman);
+      if (maxPinjaman) filter.jumlahPemesananTiket.$lte = Number(maxPinjaman);
     }
 
     if (tenor) {
@@ -139,7 +139,7 @@ const getLoans = async (req, res, next) => {
 
     return res.status(200).json({
       status: 'success',
-      message: 'Data pinjaman berhasil diambil',
+      message: 'Data Pembelian Tiket Bus Berhasil',
       pagination: {
         total: totalDocs,
         page: pageNum,
@@ -188,8 +188,8 @@ const createLoan = async (req, res, next) => {
     let {
       anggota,
       namaAnggota,
-      jumlahPinjaman,
-      tenorBulan,
+      jumlahPemesananTiket,
+      JadwalBus,
       bungaPersen,
       status,
       keterangan,
@@ -198,9 +198,9 @@ const createLoan = async (req, res, next) => {
     } = req.body;
 
     // Validasi input dasar
-    if ((!anggota && !namaAnggota) || !jumlahPinjaman || !tenorBulan || !status) {
+    if ((!anggota && !namaAnggota) || !jumlahPemesanTiket || !hargatiket || !status) {
       const error = new Error(
-        'Data tidak lengkap. anggota (atau namaAnggota), jumlahPinjaman, tenorBulan, dan status wajib diisi'
+        'Data tidak lengkap. anggota (atau namaAnggota), jumlahpemesananTiket, jadwaltiket, dan status wajib diisi'
       );
       error.status = 400;
       return next(error);
